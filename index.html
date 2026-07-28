@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>פלטפורמת סודוקו</title>
+<style>
+:root {
+  --bg-1: #e9e0cb;
+  --bg-2: #f8f4ea;
+  --card-bg: #ffffff;
+  --ink: #35291d;
+  --muted: #7d7160;
+  --line-thin: #ddd4c0;
+  --line-thick: #3a2f22;
+  --easy: #5f7a52;
+  --medium: #bd7f3f;
+  --hard: #a24a4f;
+  --accent: #9c7a2e;
+  --given: #35291d;
+  --radius: 16px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Segoe UI", "Heebo", Arial, sans-serif;
+  background: linear-gradient(160deg, var(--bg-2), var(--bg-1));
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 60px;
+}
+
+.app-header {
+  text-align: center;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.app-header h1 {
+  margin: 0 0 6px;
+  font-size: 2.1rem;
+  letter-spacing: 0.5px;
+}
+
+.dedication {
+  margin: 0 0 6px;
+  color: #9c6b32;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.app-main {
+  width: 100%;
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  margin-top: 18px;
+}
+
+.controls {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.level-btn {
+  flex: 1 1 140px;
+  border: none;
+  border-radius: var(--radius);
+  padding: 14px 10px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.level-btn span {
+  font-size: 0.75rem;
+  font-weight: 400;
+  opacity: 0.85;
+}
+
+.level-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.level-btn:active {
+  transform: translateY(0);
+}
+
+.level-btn.easy { background: linear-gradient(135deg, #6f9163, var(--easy)); }
+.level-btn.medium { background: linear-gradient(135deg, #d0954f, var(--medium)); }
+.level-btn.hard { background: linear-gradient(135deg, #bd5d5d, var(--hard)); }
+
+.board-wrapper {
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 22px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 16px 40px rgba(53, 41, 29, 0.16);
+}
+
+.board-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.badge {
+  background: #efe6cd;
+  color: var(--accent);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.puzzle-id {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.sudoku-board {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 1 / 1;
+  border: 3px solid var(--line-thick);
+  background: #fff;
+}
+
+.sudoku-board.hidden {
+  display: none;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(14px, 3.6vw, 22px);
+  font-weight: 600;
+  color: var(--given);
+  border: 1px solid var(--line-thin);
+  user-select: none;
+  background: #fff;
+}
+
+/* thicker lines every 3rd column/row to mark 3x3 boxes */
+.cell:nth-child(9n+1) { border-right: 2px solid var(--line-thick); }
+.cell:nth-child(9n+3),
+.cell:nth-child(9n+6) { border-left: 2px solid var(--line-thick); }
+.cell:nth-child(9n) { border-left: 2px solid var(--line-thick); }
+
+.row-thick-top {
+  border-top: 2px solid var(--line-thick);
+}
+.row-thick-bottom {
+  border-bottom: 2px solid var(--line-thick);
+}
+
+.credit {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.action-btn {
+  flex: 1 1 auto;
+  background: rgba(53, 41, 29, 0.06);
+  color: var(--ink);
+  border: 1px solid rgba(53, 41, 29, 0.3);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.action-btn:hover:not(:disabled) {
+  background: rgba(53, 41, 29, 0.14);
+}
+
+.action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.app-footer {
+  margin-top: 28px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ---------- Print styles ---------- */
+@media print {
+  body {
+    background: #fff;
+    padding: 0;
+    color: #000;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .app-header h1 {
+    color: #000;
+  }
+
+  .dedication {
+    color: #000;
+  }
+
+  .subtitle {
+    display: none;
+  }
+
+  .board-wrapper {
+    box-shadow: none;
+    border: none;
+    padding: 0;
+  }
+
+  .badge {
+    background: none;
+    color: #000;
+    border: 1px solid #000;
+  }
+
+  .sudoku-board {
+    max-width: 100%;
+    page-break-inside: avoid;
+  }
+}
+</style>
+</head>
+<body>
+
+  <header class="app-header">
+    <h1>🧩 פלטפורמת סודוקו</h1>
+    <p class="dedication">💜 לסבא היקר, מחני שטיינמץ 💜</p>
+    <p class="subtitle">לחצו על רמת קושי כדי ליצור לוח סודוקו חדש</p>
+  </header>
+
+  <main class="app-main">
+
+    <section class="controls no-print">
+      <button class="level-btn easy" data-level="easy">
+        קל
+        <span>36 רמזים</span>
+      </button>
+      <button class="level-btn medium" data-level="medium">
+        בינוני
+        <span>32 רמזים</span>
+      </button>
+      <button class="level-btn hard" data-level="hard">
+        קשה
+        <span>26 רמזים</span>
+      </button>
+    </section>
+
+    <section class="board-wrapper">
+      <div class="board-meta">
+        <span id="difficultyLabel" class="badge">בחרו רמת קושי כדי להתחיל</span>
+        <span id="puzzleId" class="puzzle-id"></span>
+      </div>
+
+      <div id="board" class="sudoku-board" aria-label="לוח סודוקו"></div>
+
+      <p class="credit">נוצר על ידי חני שטיינמץ &middot; 0504113308 &middot; code2bloom@gmail.com</p>
+    </section>
+
+    <section class="actions no-print">
+      <button id="newBtn" class="action-btn" disabled>🔄 לוח חדש (אותה רמה)</button>
+      <button id="printBtn" class="action-btn" disabled>🖨️ הדפסה</button>
+      <button id="downloadBtn" class="action-btn" disabled>⬇️ הורדה כתמונה</button>
+    </section>
+
+  </main>
+
+  <footer class="app-footer no-print">
+    <p>נוצר אוטומטית בכל לחיצה &mdash; כל סודוקו הוא ייחודי ופתיר בפתרון יחיד.</p>
+  </footer>
+
+  <canvas id="hiddenCanvas" class="hidden"></canvas>
+
+  <script>
+"use strict";
+
+/* ---------------------------------------------------------
+   Sudoku core: generation of a full solved board, then
+   removal of cells (while checking the puzzle still has a
+   single unique solution) to build a playable puzzle.
+--------------------------------------------------------- */
+
+const SIZE = 9;
+const BOX = 3;
+
+const LEVELS = {
+  easy: { clues: 40, label: "קל" },
+  medium: { clues: 32, label: "בינוני" },
+  hard: { clues: 26, label: "קשה" },
+};
+
+function shuffledRange(n) {
+  const arr = Array.from({ length: n }, (_, i) => i + 1);
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function isSafe(board, row, col, num) {
+  for (let i = 0; i < SIZE; i++) {
+    if (board[row][i] === num || board[i][col] === num) return false;
+  }
+  const boxRow = row - (row % BOX);
+  const boxCol = col - (col % BOX);
+  for (let r = 0; r < BOX; r++) {
+    for (let c = 0; c < BOX; c++) {
+      if (board[boxRow + r][boxCol + c] === num) return false;
+    }
+  }
+  return true;
+}
+
+function fillBoard(board) {
+  for (let row = 0; row < SIZE; row++) {
+    for (let col = 0; col < SIZE; col++) {
+      if (board[row][col] !== 0) continue;
+      const candidates = shuffledRange(SIZE);
+      for (const num of candidates) {
+        if (isSafe(board, row, col, num)) {
+          board[row][col] = num;
+          if (fillBoard(board)) return true;
+          board[row][col] = 0;
+        }
+      }
+      return false;
+    }
+  }
+  return true;
+}
+
+function generateSolvedBoard() {
+  const board = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
+  fillBoard(board);
+  return board;
+}
+
+/**
+ * Counts the number of solutions for a board, stopping early
+ * once `limit` solutions have been found (we only ever need to
+ * know whether it's 0, 1, or "more than 1").
+ */
+function countSolutions(board, limit = 2) {
+  let count = 0;
+
+  function solve() {
+    if (count >= limit) return;
+    for (let row = 0; row < SIZE; row++) {
+      for (let col = 0; col < SIZE; col++) {
+        if (board[row][col] !== 0) continue;
+        for (let num = 1; num <= SIZE; num++) {
+          if (isSafe(board, row, col, num)) {
+            board[row][col] = num;
+            solve();
+            board[row][col] = 0;
+            if (count >= limit) return;
+          }
+        }
+        return;
+      }
+    }
+    count++;
+  }
+
+  solve();
+  return count;
+}
+
+function cloneBoard(board) {
+  return board.map((row) => row.slice());
+}
+
+/**
+ * Starting from a fully solved board, removes cells one at a
+ * time (in random order) as long as the puzzle keeps a single
+ * unique solution, until the target clue count is reached or no
+ * more cells can safely be removed.
+ */
+function buildPuzzle(solved, targetClues) {
+  const puzzle = cloneBoard(solved);
+  const positions = [];
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) positions.push([r, c]);
+  }
+  // shuffle positions
+  for (let i = positions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [positions[i], positions[j]] = [positions[j], positions[i]];
+  }
+
+  let clues = SIZE * SIZE;
+
+  for (const [r, c] of positions) {
+    if (clues <= targetClues) break;
+    const backup = puzzle[r][c];
+    puzzle[r][c] = 0;
+
+    const testBoard = cloneBoard(puzzle);
+    const solutions = countSolutions(testBoard, 2);
+
+    if (solutions === 1) {
+      clues--;
+    } else {
+      puzzle[r][c] = backup; // removing this cell broke uniqueness
+    }
+  }
+
+  return puzzle;
+}
+
+function generatePuzzle(level) {
+  const config = LEVELS[level];
+  const solved = generateSolvedBoard();
+  const puzzle = buildPuzzle(solved, config.clues);
+  return { puzzle, solved, level };
+}
+
+/* ---------------------------------------------------------
+   Rendering
+--------------------------------------------------------- */
+
+function renderBoard(container, board) {
+  container.innerHTML = "";
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      if (r === 0) cell.classList.add("row-thick-top");
+      if (r === SIZE - 1 || r % BOX === BOX - 1) cell.classList.add("row-thick-bottom");
+
+      const value = board[r][c];
+      if (value !== 0) {
+        cell.textContent = value;
+      }
+      container.appendChild(cell);
+    }
+  }
+}
+
+/* ---------------------------------------------------------
+   App state & wiring
+--------------------------------------------------------- */
+
+let currentLevel = null;
+let currentPuzzle = null;
+let puzzleCounter = 0;
+
+const boardEl = document.getElementById("board");
+const difficultyLabel = document.getElementById("difficultyLabel");
+const puzzleIdEl = document.getElementById("puzzleId");
+
+const newBtn = document.getElementById("newBtn");
+const printBtn = document.getElementById("printBtn");
+const downloadBtn = document.getElementById("downloadBtn");
+
+function newGame(level) {
+  currentLevel = level;
+  const { puzzle } = generatePuzzle(level);
+  currentPuzzle = puzzle;
+  puzzleCounter++;
+
+  renderBoard(boardEl, puzzle);
+
+  difficultyLabel.textContent = `רמת קושי: ${LEVELS[level].label}`;
+  puzzleIdEl.textContent = `לוח מס' ${puzzleCounter} · ${new Date().toLocaleDateString("he-IL")}`;
+
+  [newBtn, printBtn, downloadBtn].forEach((b) => (b.disabled = false));
+}
+
+document.querySelectorAll(".level-btn").forEach((btn) => {
+  btn.addEventListener("click", () => newGame(btn.dataset.level));
+});
+
+newBtn.addEventListener("click", () => {
+  if (currentLevel) newGame(currentLevel);
+});
+
+printBtn.addEventListener("click", () => {
+  window.print();
+});
+
+downloadBtn.addEventListener("click", () => {
+  if (!currentPuzzle) return;
+  const dataUrl = renderBoardToCanvas(currentPuzzle, LEVELS[currentLevel].label);
+  const link = document.createElement("a");
+  link.href = dataUrl;
+  link.download = `sudoku-${currentLevel}-${puzzleCounter}.png`;
+  link.click();
+});
+
+/* ---------------------------------------------------------
+   Canvas export (for the "download as image" button)
+--------------------------------------------------------- */
+
+function renderBoardToCanvas(board, levelLabel) {
+  const canvas = document.getElementById("hiddenCanvas");
+  const cellSize = 60;
+  const margin = 40;
+  const boardPx = cellSize * SIZE;
+  const titleHeight = 60;
+  const footerHeight = 34;
+  const size = boardPx + margin * 2;
+
+  canvas.width = size;
+  canvas.height = size + titleHeight + footerHeight;
+  const ctx = canvas.getContext("2d");
+
+  // background
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // title
+  ctx.fillStyle = "#292420";
+  ctx.font = "bold 28px Arial";
+  ctx.textAlign = "center";
+  ctx.direction = "rtl";
+  ctx.fillText(`סודוקו · רמת קושי: ${levelLabel}`, canvas.width / 2, 40);
+
+  const originX = margin;
+  const originY = titleHeight;
+
+  // numbers
+  ctx.font = "600 26px Arial";
+  ctx.fillStyle = "#292420";
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const value = board[r][c];
+      if (value === 0) continue;
+      const x = originX + c * cellSize + cellSize / 2;
+      const y = originY + r * cellSize + cellSize / 2 + 9;
+      ctx.fillText(String(value), x, y);
+    }
+  }
+
+  // grid lines
+  ctx.strokeStyle = "#2f2a23";
+  for (let i = 0; i <= SIZE; i++) {
+    ctx.lineWidth = i % BOX === 0 ? 3 : 1;
+    // vertical
+    ctx.beginPath();
+    ctx.moveTo(originX + i * cellSize, originY);
+    ctx.lineTo(originX + i * cellSize, originY + boardPx);
+    ctx.stroke();
+    // horizontal
+    ctx.beginPath();
+    ctx.moveTo(originX, originY + i * cellSize);
+    ctx.lineTo(originX + boardPx, originY + i * cellSize);
+    ctx.stroke();
+  }
+
+  // credit line
+  ctx.fillStyle = "#6b6459";
+  ctx.font = "16px Arial";
+  ctx.fillText(
+    "נוצר על ידי חני שטיינמץ · 0504113308 · code2bloom@gmail.com",
+    canvas.width / 2,
+    originY + boardPx + footerHeight
+  );
+
+  return canvas.toDataURL("image/png");
+}
+  </script>
+</body>
+</html>
