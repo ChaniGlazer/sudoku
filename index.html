@@ -162,7 +162,7 @@ body {
   width: 100%;
   max-width: 480px;
   aspect-ratio: 1 / 1;
-  border: 4px solid var(--line-thick);
+  border: 3px solid var(--line-thick);
   background: #fff;
 }
 
@@ -177,7 +177,7 @@ body {
   font-size: clamp(14px, 3.6vw, 22px);
   font-weight: 600;
   color: var(--given);
-  border: 2px solid var(--line-thin);
+  border: 1px solid var(--line-thin);
   user-select: none;
   background: #fff;
 }
@@ -194,7 +194,7 @@ body {
 
 .cell.selected {
   background: #fbedc8 !important;
-  box-shadow: inset 0 0 0 3px var(--accent);
+  box-shadow: inset 0 0 0 2px var(--accent);
 }
 
 .cell.error {
@@ -203,16 +203,16 @@ body {
 }
 
 /* thicker lines every 3rd column/row to mark 3x3 boxes */
-.cell:nth-child(9n+1) { border-right: 4px solid var(--line-thick); }
+.cell:nth-child(9n+1) { border-right: 2px solid var(--line-thick); }
 .cell:nth-child(9n+3),
-.cell:nth-child(9n+6) { border-left: 4px solid var(--line-thick); }
-.cell:nth-child(9n) { border-left: 4px solid var(--line-thick); }
+.cell:nth-child(9n+6) { border-left: 2px solid var(--line-thick); }
+.cell:nth-child(9n) { border-left: 2px solid var(--line-thick); }
 
 .row-thick-top {
-  border-top: 4px solid var(--line-thick);
+  border-top: 2px solid var(--line-thick);
 }
 .row-thick-bottom {
-  border-bottom: 4px solid var(--line-thick);
+  border-bottom: 2px solid var(--line-thick);
 }
 
 .credit {
@@ -354,28 +354,34 @@ body {
     max-width: 100%;
     page-break-inside: avoid;
     border-width: 4px;
+    border-color: #000;
   }
 
   .cell {
     font-size: 32px;
     font-weight: 700;
     border-width: 1.5px;
+    border-color: #000;
   }
 
   .cell:nth-child(9n+1) {
     border-right-width: 3px;
+    border-right-color: #000;
   }
   .cell:nth-child(9n+3),
   .cell:nth-child(9n+6),
   .cell:nth-child(9n) {
     border-left-width: 3px;
+    border-left-color: #000;
   }
 
   .row-thick-top {
     border-top-width: 3px;
+    border-top-color: #000;
   }
   .row-thick-bottom {
     border-bottom-width: 3px;
+    border-bottom-color: #000;
   }
 
   .cell.selected {
